@@ -5,6 +5,7 @@
 
 import datetime
 import json
+import numpy as np
 import random
 import shlex
 import sys
@@ -12,13 +13,13 @@ import sys
 class OutputMixin(object):
     "Provide functions for outputting problems and solutions."
 
-    def open_output_file(self, oname):
+    def open_output_file(self, oname, mode="w"):
         "Open a file or standard output."
         if oname == "<stdout>":
             outfile = sys.stdout
         else:
             try:
-                outfile = open(oname, "w")
+                outfile = open(oname, mode)
             except IOError:
                 self.abend('Failed to open %s for output' % oname)
         return outfile
@@ -389,6 +390,12 @@ for i in range(len(result.samples())):
         print("    %-*s  %s" % (wd, v, s.sample[v] == 1))
 ''')
 
+    def output_npz(self, oname, problem):
+        "Output a problem as a NumPy QUBO matrix."
+        vars = sorted(problem.all_bqm_variables())
+        mat = problem.bqm.to_numpy_matrix(variable_order=vars)
+        np.savez_compressed(oname, qmasm=mat)
+
     def write_output(self, problem, oname, oformat, as_qubo, sampler, sampler_args):
         "Write an output file in one of a variety of formats."
 
@@ -408,6 +415,10 @@ for i in range(len(result.samples())):
             self.output_minizinc(outfile, as_qubo, problem)
         elif oformat == "bqpjson":
             self.output_bqpjson(outfile, as_qubo, problem)
+        elif oformat == "numpy":
+            self.output_npz(oname, problem)
+        else:
+            self.abend('internal error outputting "%s"' % oformat)
 
         # Close the output file.
         if oname != "<stdout>":
