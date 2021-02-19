@@ -392,9 +392,16 @@ for i in range(len(result.samples())):
 
     def output_npz(self, oname, problem):
         "Output a problem as a NumPy QUBO matrix."
-        vars = sorted(problem.all_bqm_variables())
-        mat = problem.bqm.to_numpy_matrix(variable_order=vars)
-        np.savez_compressed(oname, qmasm=mat)
+        physical = getattr(problem, "logical", None) != None
+        vars = sorted(problem.all_bqm_variables(force_recompute=True))
+        if physical:
+            mat = problem.bqm.to_numpy_matrix(variable_order=vars).astype('d')
+            np.savez_compressed(oname, qubo=mat, pvars=vars)
+        else:
+            sym_map = problem.qmasm.sym_map
+            syms = [' '.join(sym_map.to_symbols(n)) for n in vars]
+            mat = problem.bqm.to_numpy_matrix(variable_order=vars).astype('d')
+            np.savez_compressed(oname, qubo=mat, lvars=vars, syms=syms)
 
     def write_output(self, problem, oname, oformat, as_qubo, sampler, sampler_args):
         "Write an output file in one of a variety of formats."
