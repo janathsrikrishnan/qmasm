@@ -412,7 +412,7 @@ for i in range(len(result.samples())):
         # Output the weights and strengths in the specified format.
         if oformat == "qubist":
             self.output_qubist(outfile, as_qubo, problem, sampler)
-        if oformat == "ocean":
+        elif oformat == "ocean":
             self.output_ocean(outfile, as_qubo, problem, sampler, sampler_args)
         elif oformat == "qbsolv":
             self.output_qbsolv(outfile, problem)
