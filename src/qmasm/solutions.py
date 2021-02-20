@@ -407,12 +407,14 @@ class Solutions(object):
         "Discard solutions with failed assertions.  Return the remaining solutions."
         return [s for s in self.solutions if not s.failed_assertions(stop_on_fail)]
 
-    def discard_non_minimal(self):
-        "Discard solutions with non-minimal energy.  Return the remaining solutions."
+    def discard_non_minimal(self, equality):
+        '''Discard solutions with non-minimal energy.  Return the remaining
+        solutions.  Use the argument as the minimum difference in floating-point
+        values to be considered "equal".'''
         if len(self.solutions) == 0:
             return []
         min_energy = min([s.energy for s in self.solutions])
-        return [s for s in self.solutions if s.energy == min_energy]
+        return [s for s in self.solutions if abs(s.energy - min_energy) < equality]
 
     def merge_duplicates(self):
         """Merge duplicate solutions (same assignments to all non-ignored
@@ -427,10 +429,11 @@ class Solutions(object):
         solutions.sort(key=lambda s: (s.energy, s.id))
         return solutions
 
-    def filter(self, show, verbose, nsamples):
+    def filter(self, show, verbose, nsamples, equality):
         '''Return solutions as filtered according to the "show" parameter.
         Output information about the filtering based on the "verbose"
-        parameter.'''
+        parameter.  Perform floating-point comparisons using the "equality"
+        parameter".'''
         # Prepare various views of the solutions.
         all_solns = copy.copy(self)
         valid_solns = copy.copy(self)
@@ -486,11 +489,11 @@ class Solutions(object):
 
         # Filter out solutions that are not at minimal energy.
         if verbose >= 1 or show == "valid":
-            valid_solns.solutions = valid_solns.discard_non_minimal()
+            valid_solns.solutions = valid_solns.discard_non_minimal(equality)
             if verbose >= 1:
                 sys.stderr.write("    %*d at minimal energy\n" % (ndigits, len(valid_solns.solutions)))
         if show == "best":
-            filtered_best_solns = best_solns.discard_non_minimal()
+            filtered_best_solns = best_solns.discard_non_minimal(equality)
             if len(filtered_best_solns) > 1:
                 best_solns.solutions = filtered_best_solns
 

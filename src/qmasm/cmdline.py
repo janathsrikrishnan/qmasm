@@ -62,6 +62,8 @@ class ParseCommandLine(object):
                                help='wrap the solver within one or more composites (currently only "virtualgraph")')
         cl_parser.add_argument("--pack-qubits", metavar="POS_INT", type=int,
                                help='attempt to pack the problem into an N-qubit "corner" of the physical topology during embedding')
+        cl_parser.add_argument("--equality", metavar="FLOAT", type=float, default=0.0001,
+                               help="specify the maximum distance between energy levels to be considered equal")
         cl_parser.add_argument("--physical", action="store_true",
                                help="map variables containing a number to the physical qubits represented by that number")
         cl_parser.add_argument("--schedule", metavar="T,S,...", type=str,
